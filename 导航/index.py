@@ -1,32 +1,27 @@
-from flask import Flask, render_template, jsonify, Response
-import sys
-import os
+from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
-
-# 添加项目根目录到Python路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
 
 from feishu_api import FeishuAPI
 from config import Config
 
 # 初始化Flask应用
 app = Flask(__name__, 
-            static_folder='../static', 
-            template_folder='../templates')
-            
-# 应用配置
+            static_url_path='/static', 
+            static_folder='static', 
+            template_folder='templates')
 app.config.from_object(Config)
 CORS(app)  # 启用CORS
 
 # 初始化飞书API
 feishu_api = FeishuAPI()
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def home():
     """主页"""
     return render_template('index.html')
 
-@app.route('/api/data')
+@app.route('/api/data', methods=['GET'])
 def get_data():
     """获取飞书多维表格数据"""
     data = feishu_api.get_formatted_data()
@@ -48,10 +43,11 @@ def server_error(e):
     """处理500错误"""
     return render_template('500.html'), 500
 
-# Vercel处理函数
-def handler(request):
-    """处理Vercel请求"""
-    return app
+# Vercel需要的处理函数
+def handler(request, response):
+    with app.request_context(request):
+        # 处理请求
+        return app.wsgi_app
 
 # 本地开发服务器
 if __name__ == '__main__':

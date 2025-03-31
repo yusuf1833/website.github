@@ -1,9 +1,9 @@
 {
-    "version": 2,
     "builds": [
         {
-            "src": "api/index.py",
-            "use": "@vercel/python"
+            "src": "api/wsgi.py",
+            "use": "@vercel/python",
+            "config": { "maxLambdaSize": "15mb" }
         },
         {
             "src": "static/**",
@@ -17,7 +17,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "/api/index.py"
+            "dest": "api/wsgi.py"
         }
     ]
 } 
